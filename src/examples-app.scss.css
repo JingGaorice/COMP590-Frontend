@@ -1,0 +1,15 @@
+* {
+    box-sizing: border-box;
+}
+
+.examples {
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    position: fixed;
+    width: 200px;
+    padding: 10px;
+    border: 1px solid darkgray;
+    background-color: white;
+
+}
