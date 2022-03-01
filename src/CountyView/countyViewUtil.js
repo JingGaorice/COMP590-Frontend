@@ -173,12 +173,14 @@ export function searchBarAllInOneFunction(data2020, data2021,selectedList, selec
 
     for(let i = 0; i < selectedList.length; i += 1){
         let selectCountyName = selectedList[i].name;
+
         let calculateList = JSON.parse(JSON.stringify(validDataDays(dataInput, selectCountyName)));
         if(bothYears){
             calculateList = calculateBothYearData(JSON.parse(JSON.stringify(data2020)), JSON.parse(JSON.stringify(data2021)), selectCountyName);
         }
-        let bottomLabel = calculateList[0], graphDataPoint = calculateList[1];
 
+        let bottomLabel = calculateList[0], graphDataPoint = calculateList[1];
+        console.log(bottomLabel);
         if(allInOneView.labels.length === 0){
             allInOneView.labels = bottomLabel;
         }
@@ -208,13 +210,17 @@ export function jsonParseStringify(object){
 
 export function validDataDays(inputData, countyName){
     let returnBottomLabel = [], returnGraphDataPoint = [];
+    let year = 21;
+    if(JSON.stringify(inputData[0][0]) === '{}'){
+        year = 20;
+    }
     for(let month = 1; month <= inputData.length; month += 1){
         const monthPadded = pad(month);
         for(let day = 1; day <= datemap[month]; day += 1){
             const dayPadded = pad(day);
             const countyData = inputData[month - 1][day - 1][countyName];
             if(countyData && countyData >= 1){
-                returnBottomLabel.push(inputData[month - 1][day - 1]["Date"])
+                returnBottomLabel.push(month + "/" + day + "/" + year)
                 returnGraphDataPoint.push(parseInt(countyData));
             }
 

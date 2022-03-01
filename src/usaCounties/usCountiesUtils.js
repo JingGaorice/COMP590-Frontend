@@ -1,4 +1,4 @@
-import {abbrState} from "../CountyView/countyViewUtil";
+import {abbrState, jsonParseStringify} from "../CountyView/countyViewUtil";
 import {USACounties} from "./usaCounties";
 
 export function returnFullNameList(){
@@ -53,6 +53,12 @@ export function returnInitNameList(){
     return stateFullInitList;
 }
 
+export function parseCountyList(data){
+    let dataCounty = jsonParseStringify(data);
+    return Object.keys(dataCounty[0][0]);
+}
+
+
 export const stateFullInitList = [
     ['Arizona', 'AZ'],
     ['Alabama', 'AL'],
@@ -105,3 +111,5 @@ export const stateFullInitList = [
     ['Wisconsin', 'WI'],
     ['Wyoming', 'WY'],
 ];
+
+export const defaultLabelList = ['4/16/20', '5/9/20', '5/13/20', '5/14/20', '6/17/20', '6/19/20', '6/24/20', '6/27/20', '6/30/20', '7/1/20', '7/2/20', '7/3/20', '7/7/20', '7/8/20', '7/9/20', '7/10/20', '7/11/20', '7/14/20', '7/16/20', '7/17/20', '7/18/20', '7/21/20', '7/22/20', '7/23/20', '7/24/20', '7/29/20', '7/30/20', '8/6/20', '8/7/20', '8/11/20', '8/15/20', '8/19/20', '8/20/20', '8/26/20', '9/4/20', '9/11/20', '9/17/20', '9/18/20', '9/22/20', '9/28/20', '10/3/20', '10/6/20', '10/8/20', '10/13/20', '10/20/20', '10/27/20', '10/29/20', '10/31/20', '11/1/20', '11/3/20', '11/5/20', '11/7/20', '11/14/20', '11/16/20', '11/18/20', '11/19/20', '11/20/20', '11/23/20', '11/25/20', '12/1/20', '12/3/20', '12/5/20', '12/7/20', '12/8/20', '12/9/20', '12/10/20', '12/11/20', '12/12/20', '12/14/20', '12/15/20', '12/17/20', '12/18/20', '12/19/20', '12/23/20', '12/25/20', '12/28/20', '12/29/20', '12/30/20'];

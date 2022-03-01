@@ -28,7 +28,12 @@ import {backendTo} from "../backend/backendUtils";
 import {USACounties} from "../usaCounties/usaCounties";
 import '../examples-app.scss.css';
 import {texasCounties} from "../usaCounties/texasCounties";
-import {dropDownStateFullNameList, generateSVGMap, returnFullNameList} from "../usaCounties/usCountiesUtils";
+import {
+    dropDownStateFullNameList,
+    generateSVGMap,
+    parseCountyList,
+    returnFullNameList
+} from "../usaCounties/usCountiesUtils";
 const usaCounties  = USACounties();
 const texasMap = texasCounties();
 export function getLocationName(event) {
@@ -53,6 +58,8 @@ export default class CountyView  extends Component {
 
             data_2021AllCounties:Array(12).fill(0).map(row => new Array(31).fill({})),
             data_2020AllCounties:Array(12).fill(0).map(row => new Array(31).fill({})),
+
+            dataObject:{},
 
             selectedValue:[],
             selectedCountyList:[],
@@ -113,32 +120,47 @@ export default class CountyView  extends Component {
         this.setState({countyMapModalOpen: open})
     }
 
-    handleOnLocationClick(event){
+    async handleOnLocationClick(event) {
         let county = this.state.pointedLocation.toString().split(",")[0];
         let state = abbrState(this.state.pointedLocation.toString().split(",")[1].replace(/\s+/g, ""), "name");
 
         let found_county = false;
-
+        let dataObject = this.state.dataObject;
         let countyList = this.state.mapToCountyList[state];
 
-        for(let i = 0; i < this.state.data_2020.length; i += 1){
-            for(let j = 0; j < this.state.data_2020[i].length; j += 1){
-                if(this.state.data_2020[i][j][county]){
+        for (let i = 0; i < this.state.data_2020.length; i += 1) {
+            for (let j = 0; j < this.state.data_2020[i].length; j += 1) {
+                if (this.state.data_2020[i][j][county]) {
                     found_county = true;
                     break;
                 }
             }
         }
 
-
-        if(found_county){
-            console.log("find")
-            this.setState({selectedCountyState: this.state.selectedCountyState});
-        } else{
-            console.log("not find")
+        console.log(dataObject);
+        if(dataObject[state]){
+            found_county = true;
         }
 
-        this.setState({countyMapModalOpen: true, selectCountyName: this.state.pointedLocation.toString(), errorMessageOpen: !found_county })
+
+        if (this.state.dataObject[state]) {
+            console.log(this.state.dataObject[state]);
+        }
+
+        if (found_county) {
+            console.log("find")
+        } else {
+
+            console.log("not find")
+
+        }
+
+        this.setState({
+            countyMapModalOpen: true,
+            selectCountyName: this.state.pointedLocation.toString(),
+            errorMessageOpen: !found_county,
+
+        })
         console.log(this.state.pointedLocation)
     }
 
@@ -174,13 +196,32 @@ export default class CountyView  extends Component {
                         }
                     }
                 }
+                let dataObject = {};
+                dataObject["data_2020"] = this.state.data_2020;
+                dataObject["data_2021"] = this.state.data_2021;
+
+                this.state.dataObject["Texas"] = jsonParseStringify(dataObject);
                 this.state.loading = false;
                 this.setState({loading: false});
 
-                this.setState({data_2020: this.state.data_2020, data_2021: this.state.data_2021,loading: this.state.loading});
+                this.setState({
+                    data_2020: this.state.data_2020,
+                    data_2021: this.state.data_2021,
+                    loading: this.state.loading,
+                    dataObject: this.state.dataObject,
+                });
             })
+    }
 
-
+    async fetchDataByState(stateName){
+        this.setState({loading: true});
+        let returnObject = {};
+        await axios.get(backendTo(`fetchStateData/${stateName}`)).then(res=>{
+            let responseData = res.data;
+            returnObject = responseData;
+        })
+        this.setState({loading:false})
+        return returnObject;
     }
 
 
@@ -208,14 +249,35 @@ export default class CountyView  extends Component {
 
     }
 
-    selecteStateInMapView(e, {value}){
+    async selecteStateInMapView(e, {value}){
         let object = generateSVGMap(value);
         let fullStateName = abbrState(value, 'name');
 
+        let dataObject = this.state.dataObject;
+        let countyList = this.state.countyList;
+
+        if(dataObject[fullStateName]){
+            console.log(dataObject[fullStateName]);
+        } else{
+            let returnObject = await this.fetchDataByState(fullStateName);
+            let dataMap = {};
+            dataMap["data_2020"] = returnObject.requestData2020;
+            dataMap["data_2021"] = returnObject.requestData2021;
+            dataObject[fullStateName] = dataMap;
+            countyList = parseCountyList(dataMap["data_2021"])
+        }
+
+
+
+        //await this.fetchDataByState(fullStateName);
         this.setState({
             selectedStateInMapView: value,
             selectedObjectInMapView: object,
+            dataObject:dataObject,
+            data_2020:  dataObject[fullStateName]["data_2020"] ,
+            data_2021: dataObject[fullStateName]["data_2021"],
             showUsaMap: false,
+            countyList: countyList,
         })
 
     }
@@ -247,7 +309,11 @@ export default class CountyView  extends Component {
 
                        if(data.checked){
                            defaultObjectView = usaCounties;
+                       } else{
+                           defaultObjectView = generateSVGMap(this.state.selectedStateInMapView);
                        }
+
+
 
                        this.setState({selectedObjectInMapView: defaultObjectView, showUsaMap: data.checked});
 
@@ -431,8 +497,8 @@ export default class CountyView  extends Component {
     }
 
     countyMapChartView(countyName){
-        //  {searchBarAllInOneFunction(jsonParseStringify(this.state.data_2020),jsonParseStringify(this.state.data_2021), nameToObjectList(this.state.pointedLocation.toString().split(",")[0]), dropDownOptionValueTo[this.state.selectYearInSearch])}
         let copyData2020 = jsonParseStringify(this.state.data_2020), copyData2021 = jsonParseStringify(this.state.data_2021);
+
         let nameList =  nameToObjectList(countyName), dropDownValue = dropDownOptionValueTo[this.state.selectYearInModal], dropDownQuarter = this.state.selectQuarterInModal;
         let dataList = returnYearQuarterInMapChart(copyData2020, copyData2021, dropDownValue, dropDownQuarter);
         // console.log(dataList)
