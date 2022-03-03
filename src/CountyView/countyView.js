@@ -82,6 +82,7 @@ export default class CountyView  extends Component {
             errorMessageOpen: false,
             selectedCountyState:"",
             showUsaMap:false,
+            showUsaMapDataObject:{},
 
             stateCountyDataMap:{},
         }
@@ -128,32 +129,45 @@ export default class CountyView  extends Component {
         let dataObject = this.state.dataObject;
         let countyList = this.state.mapToCountyList[state];
 
-        for (let i = 0; i < this.state.data_2020.length; i += 1) {
-            for (let j = 0; j < this.state.data_2020[i].length; j += 1) {
-                if (this.state.data_2020[i][j][county]) {
-                    found_county = true;
-                    break;
+        if(this.state.showUsaMap){
+            if(this.state.selectedStateInMapView === abbrState(state, "abbr")){
+                this.state.showUsaMapDataObject = jsonParseStringify(this.state.dataObject);
+            } else {
+                let object = await this.fetchDataByState(state);
+                this.state.showUsaMapDataObject = jsonParseStringify(object);
+            }
+            found_county = true;
+            this.setState({showUsaMapDataObject: this.state.showUsaMapDataObject});
+        } else {
+            for (let i = 0; i < this.state.data_2020.length; i += 1) {
+                for (let j = 0; j < this.state.data_2020[i].length; j += 1) {
+                    if (this.state.data_2020[i][j][county]) {
+                        found_county = true;
+                        break;
+                    }
                 }
+            }
+
+
+            if(dataObject[state]){
+                found_county = true;
+            }
+
+
+            if (this.state.dataObject[state]) {
+                console.log(this.state.dataObject[state]);
+            }
+
+            if (found_county) {
+                console.log("find")
+            } else {
+
+                console.log("not find")
+
             }
         }
 
-        console.log(dataObject);
-        if(dataObject[state]){
-            found_county = true;
-        }
 
-
-        if (this.state.dataObject[state]) {
-            console.log(this.state.dataObject[state]);
-        }
-
-        if (found_county) {
-            console.log("find")
-        } else {
-
-            console.log("not find")
-
-        }
 
         this.setState({
             countyMapModalOpen: true,
@@ -217,6 +231,17 @@ export default class CountyView  extends Component {
         this.setState({loading: true});
         let returnObject = {};
         await axios.get(backendTo(`fetchStateData/${stateName}`)).then(res=>{
+            let responseData = res.data;
+            returnObject = responseData;
+        })
+        this.setState({loading:false})
+        return returnObject;
+    }
+
+    async fetchDataByStateCounty(stateName, countyName){
+        this.setState({loading: true});
+        let returnObject = {};
+        await axios.get(backendTo(`fetchStateData/${stateName}+${countyName}`)).then(res=>{
             let responseData = res.data;
             returnObject = responseData;
         })
@@ -498,6 +523,14 @@ export default class CountyView  extends Component {
 
     countyMapChartView(countyName){
         let copyData2020 = jsonParseStringify(this.state.data_2020), copyData2021 = jsonParseStringify(this.state.data_2021);
+
+        if(this.state.showUsaMap){
+          if(JSON.stringify(this.state.showUsaMapDataObject) === '{}'){
+          } else{
+              copyData2020 = jsonParseStringify(this.state.showUsaMapDataObject["requestData2020"])
+              copyData2021 = jsonParseStringify(this.state.showUsaMapDataObject["requestData2021"])
+          }
+        }
 
         let nameList =  nameToObjectList(countyName), dropDownValue = dropDownOptionValueTo[this.state.selectYearInModal], dropDownQuarter = this.state.selectQuarterInModal;
         let dataList = returnYearQuarterInMapChart(copyData2020, copyData2021, dropDownValue, dropDownQuarter);

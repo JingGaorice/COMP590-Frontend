@@ -180,7 +180,7 @@ export function searchBarAllInOneFunction(data2020, data2021,selectedList, selec
         }
 
         let bottomLabel = calculateList[0], graphDataPoint = calculateList[1];
-        console.log(bottomLabel);
+
         if(allInOneView.labels.length === 0){
             allInOneView.labels = bottomLabel;
         }
