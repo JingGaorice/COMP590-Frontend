@@ -34,6 +34,7 @@ import {
     parseCountyList,
     returnFullNameList
 } from "../usaCounties/usCountiesUtils";
+import {getStateInCache, isStateInCache, storeStateInCache} from "../usaCounties/StateResultCache";
 const usaCounties  = USACounties();
 const texasMap = texasCounties();
 export function getLocationName(event) {
@@ -230,10 +231,15 @@ export default class CountyView  extends Component {
     async fetchDataByState(stateName){
         this.setState({loading: true});
         let returnObject = {};
-        await axios.get(backendTo(`fetchStateData/${stateName}`)).then(res=>{
-            let responseData = res.data;
-            returnObject = responseData;
-        })
+        if (isStateInCache(stateName)) {
+            returnObject = getStateInCache(stateName);
+        } else {
+            await axios.get(backendTo(`fetchStateData/${stateName}`)).then(res=>{
+                let responseData = res.data;
+                returnObject = responseData;
+            })
+            storeStateInCache(stateName, returnObject);
+        }
         this.setState({loading:false})
         return returnObject;
     }

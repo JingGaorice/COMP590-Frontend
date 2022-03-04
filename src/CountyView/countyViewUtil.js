@@ -14,6 +14,7 @@ import {
 
 import { Bar, Chart} from 'react-chartjs-2';
 import {Label} from "semantic-ui-react";
+import {Grid} from "@mui/material";
 ChartJS.register(...registerablesJS);
 
 
@@ -130,11 +131,22 @@ export function searchBarManyChartsFunction(data2020, data2021,selectedList, sel
         }
 
         viewList.push(graphView(oneView));
-        viewList.push(<br/>)
+        // viewList.push(<br/>)
     }
 
-    return (<div>{viewList}</div>);
+    if (viewList.length <= 1) {
+        return (<div>{viewList}</div>);
+    }
 
+    return (
+        <Grid container spacing={2}>
+            {viewList.map(view => (
+                <Grid item sm={12} lg={6}>
+                    {view}
+                </Grid>
+            ))}
+        </Grid>
+    );
 
 }
 
