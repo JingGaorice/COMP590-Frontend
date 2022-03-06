@@ -4,10 +4,10 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import CountyView from "./CountyView/countyView";
-
+import CsvToChart from "./csvToChart/csvToChart";
 ReactDOM.render(
   <React.StrictMode>
-    <CountyView />
+    <CsvToChart />
   </React.StrictMode>,
   document.getElementById('root')
 );

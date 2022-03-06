@@ -14,6 +14,7 @@ import {
 
 import { Bar, Chart} from 'react-chartjs-2';
 import {Label} from "semantic-ui-react";
+import {Grid} from "@mui/material";
 ChartJS.register(...registerablesJS);
 
 
@@ -38,7 +39,7 @@ export function calculateBothYearData(data2020, data2021, selectedCountyName){
     return [labelList, dataList];
 }
 
-export function searchBarManyChartsFunction(data2020, data2021,selectedList, selectedYear, shiftDays, movingAverageDays, medianFilterDays, applyAll = true){
+export function searchBarManyChartsFunction(data2020, data2021,selectedList, selectedYear, shiftDays= 0, movingAverageDays= 0, medianFilterDays= 0, applyAll = true){
     let dataInput = jsonParseStringify(data2020);
     let viewList = [], bothYears = false;
     if(selectedYear === "2020"){
@@ -130,10 +131,22 @@ export function searchBarManyChartsFunction(data2020, data2021,selectedList, sel
         }
 
         viewList.push(graphView(oneView));
-        viewList.push(<br/>)
+
     }
 
-    return (<div>{viewList}</div>);
+    if (viewList.length <= 1) {
+        return (<div>{viewList}</div>);
+    }
+
+    return (
+        <Grid container spacing={2}>
+            {viewList.map(view => (
+                <Grid item sm={12} lg={6}>
+                    {view}
+                </Grid>
+            ))}
+        </Grid>
+    );
 
 
 }
@@ -156,6 +169,7 @@ export function findUsefulColor(colorUsedList){
 }
 
 export function searchBarAllInOneFunction(data2020, data2021,selectedList, selectedYear){
+    console.log(selectedList);
     let allInOneView = {
 
         labels: [],
